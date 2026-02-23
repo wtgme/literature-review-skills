@@ -1,6 +1,17 @@
 # Literature Review Skills
 
-AI agent skills for conducting and managing academic literature reviews. Built for opencode (`.opencode/skills/`) with a shared Python utility for paper retrieval.
+AI agent skills for conducting and managing academic literature reviews.
+
+This repo currently keeps two runnable versions:
+
+1. Gemini CLI version (`.gemini/skills/`)
+   - Uses Gemini CLI plus the Google Workspace extension for Gemini CLI for file editing and email:
+     https://github.com/gemini-cli-extensions/workspace
+   - Note: Gemini CLI can be unstable during peak demand.
+
+2. OpenCode version (`.opencode/skills/`)
+   - Added as an alternative implementation using OpenCode and a customized Google Workspace MCP for file editing and email:
+     https://github.com/wtgme/google-workspace-mcp
 
 ## Skills
 
@@ -28,6 +39,8 @@ fetch-latest-ai-papers [category-or-topic] [days-back]
 ## Structure
 
 ```
+.gemini/skills/            # Version 1: Gemini CLI skills
+
 .opencode/skills/
 ├── summarize-paper/
 │   ├── SKILL.md          # Skill definition
@@ -92,6 +105,7 @@ Replace `/path/to/literature-review-skills` with the absolute path to this repo.
 ## Requirements
 
 - opencode with skills support
+- Gemini CLI (optional, for the `.gemini/` version)
 - Python 3 (for the shared fetch utilities)
-- Google Drive MCP tool (for `summarize-paper` save/index features)
-- Gmail MCP tool (for `fetch-latest-ai-papers` email delivery)
+- Google Workspace extension for Gemini CLI (Gemini version): https://github.com/gemini-cli-extensions/workspace
+- Customized Google Workspace MCP (OpenCode version): https://github.com/wtgme/google-workspace-mcp
