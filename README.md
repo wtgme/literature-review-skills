@@ -42,6 +42,20 @@ fetch-latest-ai-papers [category-or-topic] [days-back]
 reviews/                  # Output: reviews and per-paper summaries
 ```
 
+## Setup
+
+Set the following environment variables before running the skills (e.g. in `~/.zshrc` or `~/.bashrc`):
+
+```sh
+export DIGEST_EMAIL="you@example.com"           # fetch-latest-ai-papers: digest recipient
+export GDRIVE_SUMMARIES_FOLDER_ID="<folder-id>" # summarize-paper: Google Drive folder for review docs
+export GDRIVE_INDEX_DOC_ID="<doc-id>"           # summarize-paper: Google Drive index document
+```
+
+The folder/doc IDs can be found in the URL when the file is open in Google Drive:
+- Folder: `https://drive.google.com/drive/folders/<folder-id>`
+- Doc: `https://docs.google.com/document/d/<doc-id>/edit`
+
 ## Requirements
 
 - [Gemini CLI](https://github.com/google-gemini/gemini-cli) with skills support

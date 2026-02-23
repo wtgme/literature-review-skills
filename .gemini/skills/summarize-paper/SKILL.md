@@ -206,9 +206,9 @@ Handle the response as follows:
 
 Derive a slug: `<firstauthor_lastname>_<year>_<shortname>` (e.g. `vaswani_2017_attention`).
 
-**Hardcoded IDs — do not look these up, use them directly:**
-- `Summaries` folder ID: `12sb9dWFO0rFMR9DXsKM-33iyG1Tppm8b`
-- `Paper-Readings-Index` doc ID: `1KrrpoBDXK6HEVnzwR20KEN1NJ1W1_4stVnZrFISa8d4`
+**IDs — read from environment variables:**
+- `Summaries` folder ID: `$GDRIVE_SUMMARIES_FOLDER_ID`
+- `Paper-Readings-Index` doc ID: `$GDRIVE_INDEX_DOC_ID`
 
 ---
 
@@ -228,7 +228,7 @@ Derive a slug: `<firstauthor_lastname>_<year>_<shortname>` (e.g. `vaswani_2017_a
    [full approved review markdown]
    ```
 
-3. **Call `docs.move`** with the document ID and destination folder ID `12sb9dWFO0rFMR9DXsKM-33iyG1Tppm8b`. This step is required — without it the Doc will not be in the correct location.
+3. **Call `docs.move`** with the document ID and destination folder ID `$GDRIVE_SUMMARIES_FOLDER_ID`. This step is required — without it the Doc will not be in the correct location.
 
 4. Report to the user: "Saved to Google Drive: `Paper/Paper Readings/Summaries/<slug>` — [Doc URL]"
 
@@ -238,7 +238,7 @@ Derive a slug: `<firstauthor_lastname>_<year>_<shortname>` (e.g. `vaswani_2017_a
 
 ### Step 6 — Update Index Doc (`Paper-Readings-Index`)
 
-Use doc ID `1KrrpoBDXK6HEVnzwR20KEN1NJ1W1_4stVnZrFISa8d4` directly — no search needed.
+Use doc ID `$GDRIVE_INDEX_DOC_ID` directly — no search needed.
 
 **Build the new card** (fill in all fields with real values):
 
@@ -262,18 +262,18 @@ Insights:     [1 sentence — most notable finding]
 
 **Prepend the new card (newest first):**
 
-1. **Call `docs.getText`** on doc ID `1KrrpoBDXK6HEVnzwR20KEN1NJ1W1_4stVnZrFISa8d4` to read the current document body.
+1. **Call `docs.getText`** on doc ID `$GDRIVE_INDEX_DOC_ID` to read the current document body.
 2. **Call `docs.insertText`** on the same doc ID, inserting the new card block immediately after the first line (the document heading). Use `index: 1` or insert after the newline that follows the heading — whichever the MCP tool supports — so that new cards always appear at the top in newest-first order:
    ```
    <new card block>
 
    ```
-3. Confirm to the user: "Index updated — [index Doc URL](https://docs.google.com/document/d/1KrrpoBDXK6HEVnzwR20KEN1NJ1W1_4stVnZrFISa8d4/edit) — newest entry at top."
+3. Confirm to the user: "Index updated — [index Doc URL](https://docs.google.com/document/d/$GDRIVE_INDEX_DOC_ID/edit) — newest entry at top."
 
 **Fallback** — only if an MCP call fails: append the card block to `reviews/summaries/<slug>-index-card.md` so the user can paste it manually into the index doc, and report which call failed.
 
 **Searching the index later:**
-- **Call `docs.getText`** on doc ID `1KrrpoBDXK6HEVnzwR20KEN1NJ1W1_4stVnZrFISa8d4` to retrieve all cards, then scan by keyword (category, method term, author, strength/limitation label)
+- **Call `docs.getText`** on doc ID `$GDRIVE_INDEX_DOC_ID` to retrieve all cards, then scan by keyword (category, method term, author, strength/limitation label)
 
 ---
 

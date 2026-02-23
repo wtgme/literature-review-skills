@@ -241,7 +241,7 @@ Papers in the selected set that contradict a current assumption, report negative
 
 After producing the full digest output, send it to the user's Gmail using the `gmail.send` MCP tool.
 
-**Recipient**: `wtgmme@gmail.com`
+**Recipient**: `$DIGEST_EMAIL`
 
 **Subject line format**:
 ```
@@ -251,11 +251,11 @@ AI Research Digest — [Date range, e.g. Feb 16–23 2026]
 **Body**: The complete digest from Step 7, converted to plain text (preserve markdown structure — headings, bullets, and URLs will render cleanly in Gmail).
 
 Call `gmail.send` with:
-- `to`: `wtgmme@gmail.com`
+- `to`: `$DIGEST_EMAIL`
 - `subject`: the subject line above
 - `body`: the full digest text
 
-After sending, confirm: "Digest sent to wtgmme@gmail.com."
+After sending, confirm: "Digest sent to $DIGEST_EMAIL."
 
 ---
 
