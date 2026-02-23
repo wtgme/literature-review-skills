@@ -19,7 +19,7 @@ domain-literature-review "<keywords>" [max-papers]
 ```
 
 ### `fetch-latest-ai-papers`
-Weekly digest of recent high-quality AI papers from arXiv. Filters low-effort papers, scores by novelty and impact, flags papers that challenge the current consensus, groups by research theme, and emails the digest to the configured address.
+Daily (or periodic) digest of recent high-quality AI papers from arXiv. Filters low-effort papers, scores by novelty and impact, flags papers that challenge the current consensus, groups by research theme, and emails the digest to the configured address.
 
 ```
 fetch-latest-ai-papers [category-or-topic] [days-back]
@@ -55,6 +55,39 @@ export GDRIVE_INDEX_DOC_ID="<doc-id>"           # summarize-paper: Google Drive 
 The folder/doc IDs can be found in the URL when the file is open in Google Drive:
 - Folder: `https://drive.google.com/drive/folders/<folder-id>`
 - Doc: `https://docs.google.com/document/d/<doc-id>/edit`
+
+## Daily Cron Job
+
+**1. Create the env file** (never committed to git):
+
+```sh
+cat > ~/.env.literature-review <<'EOF'
+export DIGEST_EMAIL="you@example.com"
+export GDRIVE_SUMMARIES_FOLDER_ID="<folder-id>"
+export GDRIVE_INDEX_DOC_ID="<doc-id>"
+EOF
+```
+
+**2. Make the script executable:**
+
+```sh
+chmod +x scripts/run-daily-digest.sh
+```
+
+**3. Create the log directory:**
+
+```sh
+mkdir -p ~/logs
+```
+
+**4. Add the cron entry** (`crontab -e`):
+
+```cron
+# Daily AI paper digest at 8am
+0 8 * * * /path/to/literature-review-skills/scripts/run-daily-digest.sh
+```
+
+Replace `/path/to/literature-review-skills` with the absolute path to this repo. Logs are written to `~/logs/literature-review-digest.log`.
 
 ## Requirements
 
