@@ -1,6 +1,6 @@
 # Literature Review Skills
 
-AI agent skills for conducting and managing academic literature reviews. Built for Gemini CLI (`.gemini/skills/`) with a shared Python utility for paper retrieval.
+AI agent skills for conducting and managing academic literature reviews. Built for opencode (`.opencode/skills/`) with a shared Python utility for paper retrieval.
 
 ## Skills
 
@@ -28,7 +28,7 @@ fetch-latest-ai-papers [category-or-topic] [days-back]
 ## Structure
 
 ```
-.gemini/skills/
+.opencode/skills/
 ├── summarize-paper/
 │   ├── SKILL.md          # Skill definition
 │   └── parse_paper.py    # Paper ingestion (arXiv, PDF, URL)
@@ -91,7 +91,7 @@ Replace `/path/to/literature-review-skills` with the absolute path to this repo.
 
 ## Requirements
 
-- [Gemini CLI](https://github.com/google-gemini/gemini-cli) with skills support
+- opencode with skills support
 - Python 3 (for the shared fetch utilities)
 - Google Drive MCP tool (for `summarize-paper` save/index features)
 - Gmail MCP tool (for `fetch-latest-ai-papers` email delivery)

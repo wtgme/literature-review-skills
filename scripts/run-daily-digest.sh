@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Daily AI paper digest — run by cron.
+# Weekly AI paper digest — run by cron.
 # Loads nvm, sources private env vars, then invokes the Gemini skill.
 
 set -euo pipefail
@@ -21,5 +21,5 @@ fi
 # Run from project root so Gemini picks up .gemini/skills/
 cd "$(dirname "$0")/.."
 
-gemini --yolo -p "fetch-latest-ai-papers 1" \
+gemini --yolo -p "fetch-latest-ai-papers 7" \
   >> "$HOME/logs/literature-review-digest.log" 2>&1
