@@ -1,6 +1,6 @@
 ---
 name: summarize-paper
-description: 'Critical peer-review-style analysis of an academic paper. Acts as an insightful reviewer at a top venue: summarises key contributions, evaluates the method, relates the work to prior art analytically, identifies surprising results, provides 3 justified strengths and 3 justified limitations, proposes grounded future extensions. Saves the full review plus a representative figure link as a Google Doc in "Paper/Paper Readings/Summaries", and updates a searchable index Doc. Invoke when the user shares a paper (PDF, URL, or arXiv ID) and wants a rigorous, evaluative review.'
+description: 'Critical peer-review-style analysis of an academic paper. Acts as an insightful reviewer at a top venue: summarises key contributions, evaluates the method, relates the work to prior art analytically, identifies surprising results, provides 3 justified strengths and 3 justified limitations, proposes grounded future extensions. Saves the full review plus a representative figure link as a Google Doc in "Paper/Paper Readings/Summaries", and updates a searchable index Google Sheet. Invoke when the user shares a paper (PDF, URL, or arXiv ID) and wants a rigorous, evaluative review.'
 ---
 
 # Critical Paper Reviewer
@@ -205,14 +205,15 @@ Handle the response as follows:
 Derive a slug: `<firstauthor_lastname>_<year>_<shortname>` (e.g. `vaswani_2017_attention`).
 
 **IDs — read from environment variables:**
-- `Summaries` folder ID: `$GDRIVE_SUMMARIES_FOLDER_ID`
-- `Paper-Readings-Index` doc ID: `$GDRIVE_INDEX_DOC_ID`
+- `Paper-Readings-Index` sheet ID: `$GDRIVE_INDEX_SHEET_ID`
+
+**Current MCP limitation:** the available Google Drive/Docs MCP tools do not expose a `parents` or `folderId` field when creating files. New docs are created in My Drive root by default. After creation, provide the doc URL and tell the user to move it to their target folder manually.
 
 ---
 
 ### Step 5 — Save per-paper Review Doc
 
-1. **Call `google-workspace_create_drive_file`** with `name` = `<slug>.md`, `mimeType` = `text/markdown`, and `content` = the full content below (fill in all placeholders with real values from Step 1):
+1. **Call `google-workspace_create_google_doc`** with `title` = `<slug>` and `content` = the full content below (fill in all placeholders with real values from Step 1):
 
    ```
    📄 Paper: [full paper title] — [canonical paper URL]
@@ -224,42 +225,34 @@ Derive a slug: `<firstauthor_lastname>_<year>_<shortname>` (e.g. `vaswani_2017_a
    [full approved review markdown]
    ```
 
-2. Report to the user: "Saved to Google Drive: `<slug>.md`"
+2. Report to the user with the Doc URL.
+3. Explicitly note that the doc was created in My Drive root (MCP limitation) and should be moved to the user's target folder.
 
 **Fallback** — only if an MCP call fails: save locally to `reviews/summaries/<slug>.md` with the same content, and tell the user which step failed and why.
 
 ---
 
-### Step 6 — Update Index Doc (`Paper-Readings-Index`)
+### Step 6 — Update Index Sheet (`Paper-Readings-Index`)
 
-Use doc ID `$GDRIVE_INDEX_DOC_ID` directly — no search needed.
+Use sheet ID `$GDRIVE_INDEX_SHEET_ID` directly — no search needed.
 
-**Build the new card** (fill in all fields with real values):
+**Build one new row only** (fill in all fields with real values) in this column order.
+
+Do **not** include a header row or column names in the values payload.
 
 ```
----
-📅 [YYYY-MM-DD] · [Category] · [Year of publication]
-📝 [Full paper title]
-👤 [First author] et al. · [Affiliation of first author]
-🔗 Paper: [canonical paper URL] | Review: [Doc URL from Step 5]
-
-Contribution: [1 sentence]
-Method:       [1 sentence]
-vs. Prior:    [1 sentence — how it differs from the closest prior work]
-Insights:     [1 sentence — most notable finding]
-
-✅ [Strength 1 label] · [Strength 2 label] · [Strength 3 label]
-⚠️  [Limitation 1 label] · [Limitation 2 label] · [Limitation 3 label]
-🔭 [Future extension labels, comma-separated]
----
+[Review Date, Category, Publication Year, Paper Title, First Author, First Author Affiliation, Paper URL, Review URL, Contribution (1 sentence), Method (1 sentence), vs Prior (1 sentence), Insights (1 sentence), Strength Labels (semicolon-separated), Limitation Labels (semicolon-separated), Future Extensions (comma-separated)]
 ```
 
-**Append the new card:**
+**Append the new row:**
 
-1. **Call `google-workspace_append_google_doc`** on `documentId` = `$GDRIVE_INDEX_DOC_ID` with `text` = the new card block.
-2. Confirm to the user: "Index updated — [index Doc URL](https://docs.google.com/document/d/$GDRIVE_INDEX_DOC_ID/edit)."
+1. **Call `google-workspace_append_google_sheet`** with:
+   - `spreadsheetId` = `$GDRIVE_INDEX_SHEET_ID`
+   - `range` = `A1`
+   - `values` = `[[...]]` containing exactly one row in the order above
+2. Confirm to the user: "Index updated — https://docs.google.com/spreadsheets/d/$GDRIVE_INDEX_SHEET_ID/edit"
 
-**Fallback** — only if an MCP call fails: append the card block to `reviews/summaries/<slug>-index-card.md` so the user can paste it manually into the index doc, and report which call failed.
+**Fallback** — only if an MCP call fails: save the row as CSV to `reviews/summaries/<slug>-index-row.csv` so the user can paste/import it manually into the index sheet, and report which call failed.
 
 ---
 
