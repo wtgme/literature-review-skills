@@ -1,8 +1,6 @@
 ---
 name: summarize-paper
-description: Critical peer-review-style analysis of an academic paper. Acts as an insightful reviewer at a top venue: summarises key contributions, evaluates the method, relates the work to prior art analytically, identifies surprising results, provides 3 justified strengths and 3 justified limitations, proposes grounded future extensions. Saves the full review plus a representative figure link as a Google Doc in "Paper/Paper Readings/Summaries", and updates a searchable index Doc. Invoke when the user shares a paper (PDF, URL, or arXiv ID) and wants a rigorous, evaluative review.
-argument-hint: [paper-path-or-url-or-arxiv-id] [optional-github-repo-url]
-allowed-tools: [Read, Grep, Glob, Bash, WebFetch, Write]
+description: 'Critical peer-review-style analysis of an academic paper. Acts as an insightful reviewer at a top venue: summarises key contributions, evaluates the method, relates the work to prior art analytically, identifies surprising results, provides 3 justified strengths and 3 justified limitations, proposes grounded future extensions. Saves the full review plus a representative figure link as a Google Doc in "Paper/Paper Readings/Summaries", and updates a searchable index Google Sheet. Invoke when the user shares a paper (PDF, URL, or arXiv ID) and wants a rigorous, evaluative review.'
 ---
 
 # Critical Paper Reviewer
@@ -26,7 +24,7 @@ You are a senior researcher and peer reviewer at a top-tier venue (NeurIPS / ICM
 Run the paper parser to retrieve metadata and full text:
 
 ```bash
-python3 .gemini/skills/summarize-paper/parse_paper.py "$ARGUMENTS[0]"
+python3 .claude/skills/summarize-paper/parse_paper.py "$ARGUMENTS[0]"
 ```
 
 This outputs a `---META---` JSON block (title, authors, year, arxiv_id, abstract) followed by `---TEXT---` full paper text.
@@ -34,7 +32,7 @@ This outputs a `---META---` JSON block (title, authors, year, arxiv_id, abstract
 If the input is an arXiv ID or arXiv URL, also fetch enriched metadata:
 
 ```bash
-python3 .gemini/skills/shared/fetch_arxiv.py get <arxiv_id>
+python3 .claude/skills/shared/fetch_arxiv.py get <arxiv_id>
 ```
 
 **During this single reading pass, extract all of the following simultaneously. Do NOT re-read sections later; build a complete mental model in one pass:**
@@ -207,16 +205,15 @@ Handle the response as follows:
 Derive a slug: `<firstauthor_lastname>_<year>_<shortname>` (e.g. `vaswani_2017_attention`).
 
 **IDs — read from environment variables:**
-- `Summaries` folder ID: `$GDRIVE_SUMMARIES_FOLDER_ID`
-- `Paper-Readings-Index` doc ID: `$GDRIVE_INDEX_DOC_ID`
+- `Paper-Readings-Index` sheet ID: `$GDRIVE_INDEX_SHEET_ID`
+
+**Current MCP limitation:** the available Google Drive/Docs MCP tools do not expose a `parents` or `folderId` field when creating files. New docs are created in My Drive root by default. After creation, provide the doc URL and tell the user to move it to their target folder manually.
 
 ---
 
 ### Step 5 — Save per-paper Review Doc
 
-1. **Call `docs.create`** with title = slug. Record the document ID.
-
-2. **Call `docs.insertText`** on the new document ID with the full content below (fill in all placeholders with real values from Step 1). Use a single `insertText` call — do not use `appendText`:
+1. **Call `google-workspace_create_google_doc`** with `title` = `<slug>` and `content` = the full content below (fill in all placeholders with real values from Step 1):
 
    ```
    📄 Paper: [full paper title] — [canonical paper URL]
@@ -228,52 +225,34 @@ Derive a slug: `<firstauthor_lastname>_<year>_<shortname>` (e.g. `vaswani_2017_a
    [full approved review markdown]
    ```
 
-3. **Call `docs.move`** with the document ID and destination folder ID `$GDRIVE_SUMMARIES_FOLDER_ID`. This step is required — without it the Doc will not be in the correct location.
-
-4. Report to the user: "Saved to Google Drive: `Paper/Paper Readings/Summaries/<slug>` — [Doc URL]"
+2. Report to the user with the Doc URL.
+3. Explicitly note that the doc was created in My Drive root (MCP limitation) and should be moved to the user's target folder.
 
 **Fallback** — only if an MCP call fails: save locally to `reviews/summaries/<slug>.md` with the same content, and tell the user which step failed and why.
 
 ---
 
-### Step 6 — Update Index Doc (`Paper-Readings-Index`)
+### Step 6 — Update Index Sheet (`Paper-Readings-Index`)
 
-Use doc ID `$GDRIVE_INDEX_DOC_ID` directly — no search needed.
+Use sheet ID `$GDRIVE_INDEX_SHEET_ID` directly — no search needed.
 
-**Build the new card** (fill in all fields with real values):
+**Build one new row only** (fill in all fields with real values) in this column order.
+
+Do **not** include a header row or column names in the values payload.
 
 ```
----
-📅 [YYYY-MM-DD] · [Category] · [Year of publication]
-📝 [Full paper title]
-👤 [First author] et al. · [Affiliation of first author]
-🔗 Paper: [canonical paper URL] | Review: [Doc URL from Step 5]
-
-Contribution: [1 sentence]
-Method:       [1 sentence]
-vs. Prior:    [1 sentence — how it differs from the closest prior work]
-Insights:     [1 sentence — most notable finding]
-
-✅ [Strength 1 label] · [Strength 2 label] · [Strength 3 label]
-⚠️  [Limitation 1 label] · [Limitation 2 label] · [Limitation 3 label]
-🔭 [Future extension labels, comma-separated]
----
+[Review Date, Category, Publication Year, Paper Title, First Author, First Author Affiliation, Paper URL, Review URL, Contribution (1 sentence), Method (1 sentence), vs Prior (1 sentence), Insights (1 sentence), Strength Labels (semicolon-separated), Limitation Labels (semicolon-separated), Future Extensions (comma-separated)]
 ```
 
-**Prepend the new card (newest first):**
+**Append the new row:**
 
-1. **Call `docs.getText`** on doc ID `$GDRIVE_INDEX_DOC_ID` to read the current document body.
-2. **Call `docs.insertText`** on the same doc ID, inserting the new card block immediately after the first line (the document heading). Use `index: 1` or insert after the newline that follows the heading — whichever the MCP tool supports — so that new cards always appear at the top in newest-first order:
-   ```
-   <new card block>
+1. **Call `google-workspace_append_google_sheet`** with:
+   - `spreadsheetId` = `$GDRIVE_INDEX_SHEET_ID`
+   - `range` = `A1`
+   - `values` = `[[...]]` containing exactly one row in the order above
+2. Confirm to the user: "Index updated — https://docs.google.com/spreadsheets/d/$GDRIVE_INDEX_SHEET_ID/edit"
 
-   ```
-3. Confirm to the user: "Index updated — [index Doc URL](https://docs.google.com/document/d/$GDRIVE_INDEX_DOC_ID/edit) — newest entry at top."
-
-**Fallback** — only if an MCP call fails: append the card block to `reviews/summaries/<slug>-index-card.md` so the user can paste it manually into the index doc, and report which call failed.
-
-**Searching the index later:**
-- **Call `docs.getText`** on doc ID `$GDRIVE_INDEX_DOC_ID` to retrieve all cards, then scan by keyword (category, method term, author, strength/limitation label)
+**Fallback** — only if an MCP call fails: save the row as CSV to `reviews/summaries/<slug>-index-row.csv` so the user can paste/import it manually into the index sheet, and report which call failed.
 
 ---
 

@@ -2,21 +2,12 @@
 
 AI agent skills for conducting and managing academic literature reviews.
 
-This repo currently keeps two runnable versions:
-
-1. Gemini CLI version (`.gemini/skills/`)
-   - Uses Gemini CLI plus the Google Workspace extension for Gemini CLI for file editing and email:
-     https://github.com/gemini-cli-extensions/workspace
-   - Note: Gemini CLI can be unstable during peak demand.
-
-2. OpenCode version (`.opencode/skills/`)
-   - Added as an alternative implementation using OpenCode and a customized Google Workspace MCP for file editing and email:
-     https://github.com/wtgme/google-workspace-mcp
+Skills run on Claude Code using the [Google Workspace MCP](https://github.com/wtgme/google-workspace-mcp) for email and file access.
 
 ## Skills
 
 ### `summarize-paper`
-Critical peer-review-style analysis of a paper (PDF, URL, or arXiv ID). Produces a structured review covering contributions, method, relation to prior work, strengths, limitations, and future extensions. Saves the review to Google Drive and updates a searchable index doc.
+Critical peer-review-style analysis of a paper (PDF, URL, or arXiv ID). Produces a structured review covering contributions, method, relation to prior work, strengths, limitations, and future extensions. Saves the review to Google Drive and updates a searchable index sheet.
 
 ```
 summarize-paper <paper-path-or-url-or-arxiv-id> [github-repo-url]
@@ -39,9 +30,7 @@ fetch-latest-ai-papers [category-or-topic] [days-back]
 ## Structure
 
 ```
-.gemini/skills/            # Version 1: Gemini CLI skills
-
-.opencode/skills/
+.claude/skills/
 ├── summarize-paper/
 │   ├── SKILL.md          # Skill definition
 │   └── parse_paper.py    # Paper ingestion (arXiv, PDF, URL)
@@ -61,13 +50,11 @@ Set the following environment variables before running the skills (e.g. in `~/.z
 
 ```sh
 export DIGEST_EMAIL="you@example.com"           # fetch-latest-ai-papers: digest recipient
-export GDRIVE_SUMMARIES_FOLDER_ID="<folder-id>" # summarize-paper: Google Drive folder for review docs
-export GDRIVE_INDEX_DOC_ID="<doc-id>"           # summarize-paper: Google Drive index document
+export GDRIVE_INDEX_SHEET_ID="<sheet-id>"       # summarize-paper: Google Sheets index
 ```
 
-The folder/doc IDs can be found in the URL when the file is open in Google Drive:
-- Folder: `https://drive.google.com/drive/folders/<folder-id>`
-- Doc: `https://docs.google.com/document/d/<doc-id>/edit`
+The sheet ID can be found in the URL when the file is open in Google Sheets:
+- Sheet: `https://docs.google.com/spreadsheets/d/<sheet-id>/edit`
 
 ## Daily Cron Job
 
@@ -76,8 +63,7 @@ The folder/doc IDs can be found in the URL when the file is open in Google Drive
 ```sh
 cat > ~/.env.literature-review <<'EOF'
 export DIGEST_EMAIL="you@example.com"
-export GDRIVE_SUMMARIES_FOLDER_ID="<folder-id>"
-export GDRIVE_INDEX_DOC_ID="<doc-id>"
+export GDRIVE_INDEX_SHEET_ID="<sheet-id>"
 EOF
 ```
 
@@ -104,8 +90,6 @@ Replace `/path/to/literature-review-skills` with the absolute path to this repo.
 
 ## Requirements
 
-- opencode with skills support
-- Gemini CLI (optional, for the `.gemini/` version)
+- Claude Code with skills support
 - Python 3 (for the shared fetch utilities)
-- Google Workspace extension for Gemini CLI (Gemini version): https://github.com/gemini-cli-extensions/workspace
-- Customized Google Workspace MCP (OpenCode version): https://github.com/wtgme/google-workspace-mcp
+- [Google Workspace MCP](https://github.com/wtgme/google-workspace-mcp)

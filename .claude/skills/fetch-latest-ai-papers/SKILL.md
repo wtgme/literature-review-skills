@@ -1,8 +1,6 @@
 ---
 name: fetch-latest-ai-papers
 description: Fetch and summarise the latest high-quality AI papers from arXiv. Filters by recency and quality signals, prioritises work from high-impact labs, flags papers that challenge the current SOTA/consensus, groups by research theme, and highlights the most significant work. Use when the user wants a digest of recent AI research.
-argument-hint: [optional-category-or-topic] [optional-days-back]
-allowed-tools: [Read, Write, Bash, WebFetch]
 ---
 
 # Latest AI Papers from arXiv
@@ -30,19 +28,19 @@ Run the shared fetch utility via Bash. It handles arXiv retrieval, Semantic Scho
 
 For category-based or default searches:
 ```
-python3 .gemini/skills/shared/fetch_arxiv.py recent \
+python3 .claude/skills/shared/fetch_arxiv.py recent \
   --cats cs.AI cs.LG cs.CL cs.CV cs.NE --max 150 --days <N>
 ```
 
 For a single specified category (e.g. `cs.CL`):
 ```
-python3 .gemini/skills/shared/fetch_arxiv.py recent \
+python3 .claude/skills/shared/fetch_arxiv.py recent \
   --cats cs.CL --max 150 --days <N>
 ```
 
 For topic-phrase searches:
 ```
-python3 .gemini/skills/shared/fetch_arxiv.py search "<phrase>" \
+python3 .claude/skills/shared/fetch_arxiv.py search "<phrase>" \
   --max 100 --days <N> --cats cs.AI cs.LG cs.CL cs.CV cs.NE
 ```
 
@@ -239,7 +237,7 @@ Papers in the selected set that contradict a current assumption, report negative
 
 ### 8. Send Digest to Gmail
 
-After producing the full digest output, send it to the user's Gmail using the `gmail.send` MCP tool.
+After producing the full digest output, send it to the user's Gmail using the `google-workspace_send_gmail` MCP tool.
 
 **Recipient**: `$DIGEST_EMAIL`
 
@@ -250,7 +248,7 @@ AI Research Digest — [Date range, e.g. Feb 16–23 2026]
 
 **Body**: The complete digest from Step 7, converted to plain text (preserve markdown structure — headings, bullets, and URLs will render cleanly in Gmail).
 
-Call `gmail.send` with:
+Call `google-workspace_send_gmail` with:
 - `to`: `$DIGEST_EMAIL`
 - `subject`: the subject line above
 - `body`: the full digest text
